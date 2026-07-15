@@ -2,12 +2,15 @@ import field from "../data/wc2026-field.json";
 import { FORMATION_MODIFIERS } from "./formations";
 import type {
   DraftPick,
+  ClassicRatingMode,
   FieldTeam,
   FormationName,
+  GameMode,
   MatchStage,
   SimMatch,
   TableRow,
   TournamentResult,
+  SquadDnaResult,
 } from "./types";
 
 type TeamModel = FieldTeam & {
@@ -24,6 +27,11 @@ type SimulationInput = {
   formation: FormationName;
   replacedTeam: string;
   seed: number;
+  gameMode?: GameMode;
+  classicRatingMode?: ClassicRatingMode;
+  eraYear?: number | null;
+  eraYears?: number[];
+  squadDna?: SquadDnaResult | null;
 };
 
 const CUSTOM_NAME = "Champions XI";
@@ -53,13 +61,18 @@ function average(values: number[], fallback = 70) {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : fallback;
 }
 
+export function mapPlayerAverageToTeamStrength(rating: number) {
+  return Math.round(Math.max(58, Math.min(96, 58 + ((rating - 55) / 37) * 38)));
+}
+
 function makeCustomTeam(xi: DraftPick[], formation: FormationName, group: string): TeamModel {
   const players = xi.map((pick) => pick.player);
   const modifier = FORMATION_MODIFIERS[formation];
   const attackPlayers = players.filter((player) => player.position === "FWD" || player.position === "MID");
   const defensePlayers = players.filter((player) => player.position === "DEF" || player.position === "GK");
-  const goalkeeper = players.find((player) => player.position === "GK")?.rating ?? 65;
-  const strengthRating = Math.round(average(players.map((player) => player.rating)));
+  const playerAverage = average(players.map((player) => player.rating));
+  const goalkeeper = mapPlayerAverageToTeamStrength(players.find((player) => player.position === "GK")?.rating ?? 65);
+  const strengthRating = mapPlayerAverageToTeamStrength(playerAverage);
   return {
     team: CUSTOM_NAME,
     name: CUSTOM_NAME,
@@ -67,10 +80,10 @@ function makeCustomTeam(xi: DraftPick[], formation: FormationName, group: string
     fifaRanking: 0,
     fifaPoints: 0,
     strengthRating,
-    attack: average(attackPlayers.map((player) => player.rating)) + modifier.attack,
-    defense: average(defensePlayers.map((player) => player.rating)) + modifier.defense,
+    attack: mapPlayerAverageToTeamStrength(average(attackPlayers.map((player) => player.rating))) + modifier.attack,
+    defense: mapPlayerAverageToTeamStrength(average(defensePlayers.map((player) => player.rating))) + modifier.defense,
     goalkeeper,
-    mental: average(players.map((player) => player.rating)) + (formation === "4-4-2" ? 1 : 0),
+    mental: mapPlayerAverageToTeamStrength(playerAverage) + (formation === "4-4-2" ? 1 : 0),
     isCustom: true,
   };
 }
@@ -89,12 +102,12 @@ function makeRealTeam(team: FieldTeam): TeamModel {
 }
 
 function expectedGoals(attacker: TeamModel, defender: TeamModel) {
-  return Math.max(0.18, Math.min(4.15, 1.22 * Math.exp((attacker.attack - defender.defense) / 25)));
+  return Math.max(0.18, Math.min(4.15, 1.22 * Math.exp((attacker.attack - defender.defense) / 21)));
 }
 
 function penaltyShootout(a: TeamModel, b: TeamModel, random: () => number) {
-  const aEdge = (a.goalkeeper + a.mental - b.goalkeeper - b.mental) / 180;
-  const aChance = Math.max(0.43, Math.min(0.57, 0.5 + aEdge));
+  const aEdge = (a.goalkeeper + a.mental - b.goalkeeper - b.mental) / 150;
+  const aChance = Math.max(0.39, Math.min(0.61, 0.5 + aEdge));
   const aWins = random() < aChance;
   const baseLoser = 2 + Math.floor(random() * 3);
   const winnerScore = Math.min(6, baseLoser + 1);
@@ -222,6 +235,10 @@ function winnerModel(match: SimMatch, lookup: Map<string, TeamModel>) {
 
 export function simulateTournament(input: SimulationInput): TournamentResult {
   if (input.xi.length !== 11) throw new Error("A complete XI is required.");
+  const draftedEraYears = input.xi.map((pick) => pick.player.year);
+  if (input.gameMode === "era" && new Set(draftedEraYears).size !== 11) {
+    throw new Error("World Cup Era requires one player from each of eleven different tournament-year spins.");
+  }
   const replaced = (field as FieldTeam[]).find((team) => team.team === input.replacedTeam);
   if (!replaced) throw new Error("Choose a valid World Cup 2026 team slot.");
   const random = mulberry32(input.seed || 1);
@@ -313,9 +330,15 @@ export function simulateTournament(input: SimulationInput): TournamentResult {
     teamName: CUSTOM_NAME,
     replacedTeam: input.replacedTeam,
     group: replaced.group,
+    gameMode: input.gameMode ?? "classic",
+    classicRatingMode: input.gameMode === "classic" ? (input.classicRatingMode ?? "campaign") : "campaign",
+    eraYear: input.eraYear ?? null,
+    eraYears: input.gameMode === "era" ? draftedEraYears : (input.eraYears ?? []),
     formation: input.formation,
     xi: input.xi,
     squadRating: custom.strengthRating,
+    playerAverageRating: Math.round(average(input.xi.map((pick) => pick.player.rating))),
+    squadDna: input.squadDna ?? null,
     groupTable: allGroupTables[replaced.group],
     allGroupTables,
     path,

@@ -39,7 +39,7 @@ export function Pitch({ formation, picks, selectedPlayer, onAssign, onRemove, co
                 {onRemove && <span className="remove-pick"><X size={10} /></span>}
                 <span className="slot-rating">{pick.player.rating}</span>
                 <strong>{pick.player.name.split(" ").at(-1)}</strong>
-                <small>{pick.player.nationCode} · {pick.player.year}</small>
+                <small>{pick.player.nationCode} · {pick.player.ratingMode === "prime" ? `PRIME · ${pick.player.year}` : pick.player.year}</small>
               </>
             ) : (
               <>

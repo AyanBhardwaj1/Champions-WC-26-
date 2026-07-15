@@ -24,6 +24,9 @@ export function ShareCard({ result }: { result: TournamentResult }) {
     ctx.fillRect(58, 58, 14, 514);
     ctx.font = "700 38px Arial";
     ctx.fillText("CHAMPIONS (WC 26)", 112, 118);
+    ctx.fillStyle = "#9db0b8";
+    ctx.font = "700 20px Arial";
+    ctx.fillText(result.gameMode === "era" ? `WORLD CUP ERA · ${result.eraYears?.length ?? 11} YEAR SPINS` : `CLASSIC · ${result.classicRatingMode === "prime" ? "PRIME FORM" : "WORLD CUP FORM"}`, 760, 112);
     ctx.fillStyle = "#f3f7f5";
     ctx.font = "900 156px Arial";
     const record = result.perfect ? "8–0" : `${result.record.wins}–${result.record.draws}–${result.record.losses}`;
@@ -33,13 +36,18 @@ export function ShareCard({ result }: { result: TournamentResult }) {
     ctx.fillText(result.champion ? "WORLD CHAMPIONS" : result.reached.toUpperCase(), 112, 390);
     ctx.fillStyle = "#9db0b8";
     ctx.font = "500 28px Arial";
-    ctx.fillText(`${result.formation}  ·  ${result.squadRating} RATING  ·  ${result.goalsFor} GF / ${result.goalsAgainst} GA`, 112, 458);
+    ctx.fillText(`${result.formation}  ·  ${result.squadRating} SIM STRENGTH  ·  ${result.goalsFor} GF / ${result.goalsAgainst} GA`, 112, 458);
     ctx.fillStyle = "#ffffff";
     ctx.font = "600 24px Arial";
     ctx.fillText(`Replaced ${result.replacedTeam} in Group ${result.group}`, 112, 516);
+    if (result.squadDna) {
+      ctx.fillStyle = "#9db0b8";
+      ctx.font = "600 20px Arial";
+      ctx.fillText(`SQUAD DNA: ${result.squadDna.match.nation.toUpperCase()} ${result.squadDna.match.year} · ${result.squadDna.similarity}%`, 112, 558);
+    }
     ctx.fillStyle = "#c8ff38";
     ctx.font = "800 24px Arial";
-    ctx.fillText("CAN YOU GO 8–0?", 858, 558);
+    ctx.fillText("CAN YOU GO 8–0?", 858, 594);
     setReady(true);
   }
 

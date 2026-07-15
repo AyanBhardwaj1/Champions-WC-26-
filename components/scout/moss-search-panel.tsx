@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { ArrowRight, Check, CircleAlert, Eye, EyeOff, KeyRound, LoaderCircle, Search, Sparkles, Unplug } from "lucide-react";
-import type { DraftPlayer, Position, ScoutSearchHit } from "../../lib/types";
+import type { ClassicRatingMode, DraftPlayer, Position, ScoutSearchHit } from "../../lib/types";
+import { useMossCredentials } from "./moss-credentials-context";
 
 const suggestions = [
   "Creative midfielder from an underdog run",
@@ -18,6 +19,10 @@ type MossSearchPanelProps = {
   excludedPlayerIds?: string[];
   actionLabel?: string;
   compactIntro?: boolean;
+  lockedYear?: number;
+  scopeLabel?: string;
+  allowedPositions?: Position[];
+  ratingMode?: ClassicRatingMode;
 };
 
 type ConnectionInfo = {
@@ -40,6 +45,7 @@ export function ScoutPlayerCard({
   selected = false,
   disabled = false,
   actionLabel = "Choose player",
+  disabledLabel = "Already in your XI",
 }: {
   player: DraftPlayer;
   hit?: ScoutSearchHit;
@@ -47,10 +53,11 @@ export function ScoutPlayerCard({
   selected?: boolean;
   disabled?: boolean;
   actionLabel?: string;
+  disabledLabel?: string;
 }) {
   return (
     <article className={`scout-player-card ${selected ? "selected" : ""}`}>
-      <div className="scout-card-rating"><strong>{player.rating}</strong><small>OVR</small></div>
+      <div className="scout-card-rating"><strong>{player.rating}</strong><small>{player.ratingMode === "prime" ? "PRIME" : "OVR"}</small></div>
       <div className="scout-card-main">
         <div className="scout-card-heading">
           <div><span>{player.nationCode} · {player.year}</span><h3>{player.name}</h3></div>
@@ -65,7 +72,7 @@ export function ScoutPlayerCard({
         {hit && <div className="moss-score"><span style={{ width: `${Math.max(3, Math.min(100, hit.score * 100))}%` }} /><small>{Math.round(hit.score * 100)}% Moss match</small></div>}
         {onChoose && (
           <button type="button" className="scout-card-action" onClick={onChoose} disabled={disabled}>
-            {disabled ? "Already in your XI" : selected ? <><Check size={14} /> Selected</> : <>{actionLabel} <ArrowRight size={14} /></>}
+            {disabled ? disabledLabel : selected ? <><Check size={14} /> Selected</> : <>{actionLabel} <ArrowRight size={14} /></>}
           </button>
         )}
       </div>
@@ -73,9 +80,8 @@ export function ScoutPlayerCard({
   );
 }
 
-export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds = [], actionLabel, compactIntro = false }: MossSearchPanelProps) {
-  const [projectId, setProjectId] = useState("");
-  const [projectKey, setProjectKey] = useState("");
+export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds = [], actionLabel, compactIntro = false, lockedYear, scopeLabel, allowedPositions, ratingMode = "campaign" }: MossSearchPanelProps) {
+  const { projectId, projectKey, setProjectId, setProjectKey, clearCredentials } = useMossCredentials();
   const [showKey, setShowKey] = useState(false);
   const [connected, setConnected] = useState(false);
   const [connection, setConnection] = useState<ConnectionInfo | null>(null);
@@ -121,7 +127,7 @@ export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds 
     setLoading("search");
     setError("");
     try {
-      const body = await callMoss({ action: "search", query: nextQuery, position: position || undefined }) as SearchResponse;
+      const body = await callMoss({ action: "search", query: nextQuery, position: position || undefined, year: lockedYear, ratingMode }) as SearchResponse;
       setResults(body);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Moss Scout could not search.");
@@ -134,8 +140,7 @@ export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds 
     setConnected(false);
     setConnection(null);
     setResults(null);
-    setProjectId("");
-    setProjectKey("");
+    clearCredentials();
     setError("");
   }
 
@@ -145,8 +150,8 @@ export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds 
         <div className="moss-connect-mark"><KeyRound size={22} /></div>
         <div className="moss-connect-copy">
           <span className="eyebrow">Connect your Moss project</span>
-          <h2>{compactIntro ? "Unlock your one scout transfer." : "Search the full World Cup archive with Moss."}</h2>
-          <p>The first connection creates a dedicated <strong>moss-minilm</strong> index containing all 10,973 player campaigns. Later searches reuse that index.</p>
+          <h2>{compactIntro ? "Unlock your one scout transfer." : lockedYear ? `Search every ${lockedYear} player with Moss.` : "Search the full World Cup archive with Moss."}</h2>
+          <p>The first connection creates a dedicated <strong>moss-minilm</strong> index containing all 10,973 player campaigns. {lockedYear ? `Every result here is filtered to the ${lockedYear} tournament.` : "Later searches reuse that index."}</p>
         </div>
         <form className="moss-credentials-form" onSubmit={connect}>
           <label>
@@ -175,17 +180,17 @@ export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds 
   return (
     <section className="moss-search-workspace">
       <div className="moss-status-row">
-        <span><i /> MOSS CONNECTED · {connection?.count.toLocaleString("en-US")} CAMPAIGNS</span>
+        <span><i /> MOSS CONNECTED · {scopeLabel ?? (lockedYear ? `${lockedYear} WORLD CUP ONLY` : `${connection?.count.toLocaleString("en-US")} CAMPAIGNS`)}</span>
         <button type="button" onClick={changeCredentials}><Unplug size={13} /> Change credentials</button>
       </div>
       <form className="moss-search-form" onSubmit={(event) => search(event)}>
         <div className="moss-query-field"><Search size={19} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Describe the player or campaign you need…" /></div>
         <select value={position} onChange={(event) => setPosition(event.target.value as Position | "")} aria-label="Filter Moss search by position">
           <option value="">All positions</option>
-          <option value="GK">Goalkeepers</option>
-          <option value="DEF">Defenders</option>
-          <option value="MID">Midfielders</option>
-          <option value="FWD">Forwards</option>
+          <option value="GK" disabled={allowedPositions ? !allowedPositions.includes("GK") : false}>Goalkeepers</option>
+          <option value="DEF" disabled={allowedPositions ? !allowedPositions.includes("DEF") : false}>Defenders</option>
+          <option value="MID" disabled={allowedPositions ? !allowedPositions.includes("MID") : false}>Midfielders</option>
+          <option value="FWD" disabled={allowedPositions ? !allowedPositions.includes("FWD") : false}>Forwards</option>
         </select>
         <button type="submit" className="button button-primary" disabled={!query.trim() || loading === "search"}>
           {loading === "search" ? <LoaderCircle className="spin-icon" size={17} /> : <Search size={17} />}
@@ -211,7 +216,8 @@ export function MossSearchPanel({ onChoose, selectedPlayerId, excludedPlayerIds 
               player={hit.player}
               hit={hit}
               selected={selectedPlayerId === hit.player.id}
-              disabled={excluded.has(hit.player.id)}
+              disabled={excluded.has(hit.player.id) || (allowedPositions ? !allowedPositions.includes(hit.player.position) : false)}
+              disabledLabel={excluded.has(hit.player.id) ? "Already in your XI" : "That position is filled"}
               onChoose={onChoose ? () => onChoose(hit.player) : undefined}
               actionLabel={actionLabel}
             />

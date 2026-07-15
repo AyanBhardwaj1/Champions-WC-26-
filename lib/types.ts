@@ -1,5 +1,7 @@
 export type Position = "GK" | "DEF" | "MID" | "FWD";
 export type FormationName = "4-3-3" | "4-4-2" | "3-5-2";
+export type GameMode = "classic" | "era";
+export type ClassicRatingMode = "campaign" | "prime";
 
 export type RatingInputs = {
   appearances: number;
@@ -22,6 +24,10 @@ export type DraftPlayer = {
   position: Position;
   subPosition: string;
   rating: number;
+  campaignRating?: number;
+  primeRating?: number;
+  ratingMode?: ClassicRatingMode;
+  primeRatingSource?: "curated" | "model";
   inputs: RatingInputs;
 };
 
@@ -32,6 +38,17 @@ export type HistoricSquad = {
   year: number;
   finish: string;
   players: DraftPlayer[];
+};
+
+export type EraSummary = {
+  year: number;
+  squads: number;
+  players: number;
+  nations: string[];
+};
+
+export type EraTournament = EraSummary & {
+  historicSquads: HistoricSquad[];
 };
 
 export type FormationSlot = {
@@ -53,6 +70,41 @@ export type MossReplacement = {
   incoming: DraftPlayer;
   slotId: string;
   completedAt: string;
+};
+
+export type SquadProfile = {
+  id: string;
+  nation: string;
+  nationCode: string;
+  year: number;
+  finish: string;
+  rating: number;
+  attack: number;
+  defense: number;
+  goalkeeper: number;
+  experience: number;
+  goals: number;
+  balance: "attack-led" | "balanced" | "defense-led";
+};
+
+export type SquadDnaResult = {
+  match: SquadProfile;
+  similarity: number;
+  mossScore: number;
+  explanation: string;
+  custom: {
+    rating: number;
+    attack: number;
+    defense: number;
+    goalkeeper: number;
+    experience: number;
+    goals: number;
+    balance: "attack-led" | "balanced" | "defense-led";
+    nations: number;
+    nationMix: Array<{ nation: string; count: number }>;
+    averageYear: number;
+    eraSpan: number;
+  };
 };
 
 export type ScoutSearchHit = {
@@ -119,9 +171,15 @@ export type TournamentResult = {
   teamName: string;
   replacedTeam: string;
   group: string;
+  gameMode?: GameMode;
+  classicRatingMode?: ClassicRatingMode;
+  eraYear?: number | null;
+  eraYears?: number[];
   formation: FormationName;
   xi: DraftPick[];
   squadRating: number;
+  playerAverageRating?: number;
+  squadDna?: SquadDnaResult | null;
   groupTable: TableRow[];
   allGroupTables: Record<string, TableRow[]>;
   path: SimMatch[];

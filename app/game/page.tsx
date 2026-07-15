@@ -3,7 +3,7 @@ import { GameClient } from "../../components/game/game-client";
 
 export const metadata: Metadata = {
   title: "Draft Room · Champions (WC 26)",
-  description: "Spin through World Cup history, draft an all-time XI and chase the perfect 8–0.",
+  description: "Play the Classic Wheel or World Cup Era, reveal your Squad DNA and chase the perfect 8–0.",
 };
 
 export default function GamePage() {

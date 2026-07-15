@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { connectMossScout, friendlyMossError, searchMossScout } from "../../../../lib/moss-scout";
-import type { Position } from "../../../../lib/types";
+import { analyzeSquadDna, connectMossDna, connectMossScout, friendlyMossError, searchMossScout } from "../../../../lib/moss-scout";
+import { withCareerPrimeRating } from "../../../../lib/prime-ratings";
+import type { DraftPick, Position } from "../../../../lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,11 @@ export async function POST(request: Request) {
       return NextResponse.json(connection, { headers: { "cache-control": "no-store" } });
     }
 
+    if (action === "connect-dna") {
+      const connection = await connectMossDna(credentials.projectId, credentials.projectKey);
+      return NextResponse.json(connection, { headers: { "cache-control": "no-store" } });
+    }
+
     if (action === "search") {
       const query = typeof body === "object" && body && "query" in body && typeof body.query === "string" ? body.query.trim() : "";
       if (query.length < 2 || query.length > 240) {
@@ -43,8 +49,24 @@ export async function POST(request: Request) {
       }
       const rawPosition = typeof body === "object" && body && "position" in body ? body.position : undefined;
       const position = typeof rawPosition === "string" && positions.has(rawPosition as Position) ? rawPosition as Position : undefined;
-      const results = await searchMossScout({ ...credentials, query, position });
+      const rawYear = typeof body === "object" && body && "year" in body ? Number(body.year) : undefined;
+      const year = Number.isInteger(rawYear) && Number(rawYear) >= 1930 && Number(rawYear) <= 2022 ? Number(rawYear) : undefined;
+      const nation = typeof body === "object" && body && "nation" in body && typeof body.nation === "string" ? body.nation.trim().slice(0, 100) : undefined;
+      const results = await searchMossScout({ ...credentials, query, position, year, nation });
+      const ratingMode = typeof body === "object" && body && "ratingMode" in body && body.ratingMode === "prime" ? "prime" : "campaign";
+      if (ratingMode === "prime") {
+        results.hits = results.hits.map((hit) => ({ ...hit, player: withCareerPrimeRating(hit.player) }));
+      }
       return NextResponse.json(results, { headers: { "cache-control": "no-store" } });
+    }
+
+    if (action === "dna") {
+      const xi = typeof body === "object" && body && "xi" in body && Array.isArray(body.xi) ? body.xi as DraftPick[] : [];
+      if (xi.length !== 11 || xi.some((pick) => !pick?.player?.id || !pick.slotId)) {
+        return NextResponse.json({ error: "Squad DNA needs a complete XI." }, { status: 400 });
+      }
+      const analysis = await analyzeSquadDna({ ...credentials, xi });
+      return NextResponse.json(analysis, { headers: { "cache-control": "no-store" } });
     }
 
     return NextResponse.json({ error: "Unknown Moss Scout action." }, { status: 400 });

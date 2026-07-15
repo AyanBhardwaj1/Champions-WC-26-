@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { ArrowRight, Dices, Goal, Search, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Dices, Dna, Goal, History, Search, Trophy } from "lucide-react";
 import sources from "../data/data-sources.json";
 import { HomeStats } from "../components/home-stats";
 
 const steps = [
-  { number: "01", icon: Dices, title: "Spin history", copy: "The wheel lands on one of 489 real men’s World Cup squads, from 1930 to 2022." },
-  { number: "02", icon: ShieldCheck, title: "Draft one icon", copy: "Choose one player from that squad and place him into an open position in your XI." },
-  { number: "03", icon: Search, title: "Make one Moss move", copy: "Search the complete archive conversationally and optionally replace one position-compatible player." },
-  { number: "04", icon: Goal, title: "Take a 2026 slot", copy: "Replace one of the 48 real teams and inherit its group, opponents and bracket route." },
-  { number: "05", icon: Trophy, title: "Go 8–0", copy: "Win three group games and five knockout ties. Penalty wins count—but break the perfect run." },
+  { number: "01", icon: History, title: "Choose your mode", copy: "Play the original squad wheel or spin a different World Cup year for every Era pick." },
+  { number: "02", icon: Dices, title: "Build the XI", copy: "Choose World Cup Form or career-prime ratings in Classic, or take one player from each Era roster." },
+  { number: "03", icon: Search, title: "Ask Moss", copy: "Make one Classic transfer or search recommendations scoped only to your Era tournament." },
+  { number: "04", icon: Dna, title: "Reveal Squad DNA", copy: "Compare your completed XI with 489 historical squads and find its closest football identity." },
+  { number: "05", icon: Goal, title: "Take a 2026 slot", copy: "Replace one of the 48 real teams and inherit its group, opponents and bracket route." },
+  { number: "06", icon: Trophy, title: "Go 8–0", copy: "Win three group games and five knockout ties. Penalty wins count—but break the perfect run." },
 ];
 
 export default function Home() {
@@ -20,7 +21,7 @@ export default function Home() {
           <div className="hero-copy">
             <span className="hero-tag"><i /> WORLD CUP HISTORY, REBUILT</span>
             <h1>Build the XI.<br />Chase the <em>8–0.</em></h1>
-            <p>Draft eleven players from every era of the World Cup. Drop them into the 2026 field. See if football history can survive eight games.</p>
+            <p>Build across historical squads or spin a new World Cup year for every player. Discover your Squad DNA, enter the 2026 field, and see if football history can survive eight games.</p>
             <div className="hero-actions">
               <Link href="/game" className="button button-primary button-large">Start your run <ArrowRight size={18} /></Link>
               <Link href="/how-to-play" className="text-link">See how it works <span>↗</span></Link>
@@ -47,8 +48,8 @@ export default function Home() {
 
       <section className="how-section shell">
         <div className="section-heading split-heading">
-          <div><span className="eyebrow">Five moves from glory</span><h2>One player at a time.</h2></div>
-          <p>No transfer budget. No chemistry hacks. Just one pick from every squad the wheel gives you.</p>
+          <div><span className="eyebrow">Two modes. One trophy.</span><h2>Build history your way.</h2></div>
+          <p>Keep the original eleven-squad challenge, or make eleven year spins and choose one player from each tournament roster.</p>
         </div>
         <div className="step-grid">
           {steps.map((step) => {

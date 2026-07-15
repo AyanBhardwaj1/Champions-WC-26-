@@ -1,8 +1,8 @@
 # Champions (WC 26)
 
-![Champions WC 26 social card](./public/og.png)
+![Champions WC 26 social card](./public/og-modes.png)
 
-**Champions (WC 26)** is a local draft-and-simulate football game built around the history of the men’s World Cup. Spin a wheel of real nation-and-year squads, select one player from each squad, build an all-time starting XI, replace a team in the real 2026 field, and attempt to finish the tournament with a perfect **8–0** record.
+**Champions (WC 26)** is a local draft-and-simulate football game built around the history of the men’s World Cup. Keep the original squad-wheel challenge or spin a different tournament year for each player in World Cup Era mode. Build an XI, reveal its closest historical **Squad DNA**, replace a team in the real 2026 field, and attempt to finish the tournament with a perfect **8–0** record.
 
 The complete draft and simulation game runs locally with no account or external game database. Historical seed data is included in the repository, completed runs are saved to local SQLite, and an optional Moss integration adds conversational player search when the player supplies their own Moss project credentials.
 
@@ -34,26 +34,35 @@ The complete draft and simulation game runs locally with no account or external 
 
 ## Game overview
 
-The game combines four systems:
+The game combines seven systems:
 
-1. **Historical draft:** A wheel selects one real men’s World Cup squad from 1930–2022. The player can take exactly one eligible footballer from that roster.
-2. **Formation building:** Eleven drafted players must fill the positions in a selected 4-3-3, 4-4-2, or 3-5-2.
-3. **Moss Scout transfer:** After the eleventh spin, the player may search the complete archive and make one position-compatible replacement.
-4. **2026 tournament simulation:** The custom XI replaces one real nation in Groups A–L and plays through the group stage and, if qualified, five knockout rounds.
+1. **Two distinct game modes:** Classic Wheel preserves the original one-player-per-squad draft. World Cup Era spins a tournament year for each pick and unlocks every country and player from that spin’s World Cup.
+2. **Formation building:** Eleven players must fill the positions in a selected 4-3-3, 4-4-2, or 3-5-2.
+3. **Classic rating rules:** World Cup Form preserves campaign-specific ratings; Prime Form uses one career-peak estimate for every version of a player.
+4. **Contextual Moss scouting:** Classic allows one position-compatible archive replacement. Every Era search is locked to the current spin’s tournament roster.
+5. **Squad DNA:** A finished XI is compared with 489 historical squads to reveal its closest football identity.
+6. **2026 tournament entry:** The custom XI replaces one real nation in Groups A–L.
+7. **Full tournament simulation:** The XI plays three group matches and, if qualified, five knockout rounds.
 
 The maximum path is eight matches: three group matches plus the Round of 32, Round of 16, quarterfinal, semifinal, and final.
 
 ## Features
 
 - Three selectable formations with different tactical modifiers
+- Separate **Classic Wheel** and **World Cup Era** game modes
+- Optional **World Cup Form** and **Prime Form** rating rules inside Classic
+- One stable career-prime estimate for all 8,482 unique historical players
 - 489 usable historical World Cup squads
 - 10,973 player-tournament records
 - 85 historical national-team identities
 - Every men’s World Cup from 1930 through 2022
 - Position-compatible formation slotting
 - No repeated nation/year squad during one draft
+- Eleven World Cup year spins with one complete tournament roster per pick
 - One optional Moss-powered replacement after the draft
 - Conversational semantic search across all 10,973 player campaigns
+- Era-mode Moss recommendations strictly filtered to the current year spin
+- Moss-powered Squad DNA comparison against all 489 historical squads
 - Separate Scout Lab with semantic search and paginated archive browsing
 - Real 48-team World Cup 2026 group field
 - Full 72-match group-stage simulation
@@ -69,7 +78,18 @@ The maximum path is eight matches: three group matches plus the Round of 32, Rou
 
 ## How to play
 
-### 1. Choose a formation
+### 1. Choose a game mode
+
+Start at `/game` and choose one of two independent modes:
+
+| Mode | Player pool | Draft rule | Moss search |
+| --- | --- | --- | --- |
+| **Classic Wheel** | All 22 World Cups | Choose World Cup Form or Prime Form, then spin 11 unused nation/year squads and take one player from each | One optional, position-compatible replacement using the selected rating rules |
+| **World Cup Era** | One wheel-selected World Cup per pick | Browse every country and player in the current tournament, choose one, then spin another unused year | Recommendations are filtered to the current spin’s tournament only |
+
+Classic remains the original game and has not been replaced by Era mode.
+
+### 2. Choose a formation
 
 Start at `/game` and select one of the available systems:
 
@@ -81,31 +101,65 @@ Start at `/game` and select one of the available systems:
 
 The formation determines how many goalkeeper, defender, midfielder, and forward slots must be filled.
 
-### 2. Spin the wheel
+#### Classic rating rules
+
+After locking a Classic formation, choose one of two rating lenses:
+
+| Ruleset | Meaning | Example |
+| --- | --- | --- |
+| **World Cup Form** | The original rating calculated from that exact tournament’s appearances, goals and team finish | Lionel Messi 2010 is 77 |
+| **Prime Form** | One estimated absolute career-prime rating reused across every tournament version of the player | Lionel Messi is 94 in 2006, 2010, 2014, 2018 and 2022 |
+
+Prime Form changes only ratings. The wheel still returns the real historical roster, the one-player-per-squad rule remains, and position compatibility is unchanged. World Cup Era always uses World Cup Form.
+
+### 3A. Build in Classic Wheel
 
 Each spin returns one unused historical squad, such as `Brazil 2002`, `Cameroon 1990`, or `Bulgaria 1994`. Every usable squad has at least eleven players and at least one goalkeeper.
-
-### 3. Draft one player
 
 Select one player from the rolled squad. Only players compatible with at least one remaining broad-position slot are shown as eligible. After selecting a player, choose one of the highlighted formation positions to confirm the pick.
 
 Only one player may be taken from each rolled nation/year squad.
 
-### 4. Complete the XI
-
 Repeat the spin-and-pick process until all eleven positions are occupied. Draft progress is stored in browser storage, so an accidental refresh should not normally erase the current XI.
-
-### 5. Use the optional Moss transfer
 
 After the eleventh pick, the game opens **Moss Scout**. Enter a Moss project ID and project key, then describe the campaign you want in natural language—for example, `creative midfielder from an underdog run` or `commanding goalkeeper before 1990`.
 
-Choose one result and replace one current player with the same broad position. A midfielder replaces a midfielder, a goalkeeper replaces the goalkeeper, and so on. The transfer is final for that run and can be used only once. You can also skip it and keep the XI produced by the wheel.
+Choose one result and replace one current player with the same broad position. Prime Form converts every Moss result to the same career-prime rating model before the transfer. The transfer is final for that run and can be used only once. You can also skip it and keep the XI produced by the wheel.
 
-### 6. Enter the 2026 field
+### 3B. Build in World Cup Era
+
+For every open position, the Era wheel selects one unused men’s World Cup from 1930 through 2022. After accepting the year, the game opens that tournament’s complete archive:
+
+- Browse every participating country.
+- Search every player by name, nation, position, or inferred role.
+- Filter the roster to one country.
+- Select exactly one position-compatible player from that tournament.
+- Switch to **Search this wheel roster** for conversational Moss recommendations.
+
+Once the player is placed, that year is locked into the run and the game returns to the wheel. Repeat the process until eleven different tournament years have supplied one player each.
+
+Era search uses the same 10,973-campaign Moss index but adds the current spin’s year as a mandatory metadata filter. A result from another tournament cannot enter that pick’s results or the XI.
+
+### 4. Reveal Squad DNA
+
+After either mode produces eleven players, enter the same Moss project credentials—or reuse the in-memory credentials already entered during scouting—and select **Reveal Squad DNA**.
+
+The app creates or reuses a separate 489-document historical-squad index. Moss retrieves semantically relevant squads, while a deterministic football-profile comparison evaluates:
+
+- Overall player-campaign quality
+- Attacking and defensive balance
+- Goalkeeper quality
+- Average tournament experience
+- Goals represented in the selected XI
+- Attack-led, balanced, or defense-led identity
+
+The highest combined match produces a result such as **“Your XI most closely resembles France 1998”**, a similarity score, a metric comparison, and the historical team’s finish. Squad DNA is optional so an unavailable Moss project never blocks the tournament.
+
+### 5. Enter the 2026 field
 
 Choose one of the 48 World Cup 2026 nations. The custom team, displayed as **Champions XI**, replaces that nation in its real group and inherits its three group opponents.
 
-### 7. Simulate the tournament
+### 6. Simulate the tournament
 
 Reveal the group stage first. If the XI qualifies, advance through each knockout round until elimination or the final. Completed results are saved automatically.
 
@@ -180,11 +234,16 @@ flowchart LR
     A[Historical CSV sources] --> B[Data generator]
     B --> C[draft-pool.json]
     B --> D[wc2026-field.json]
-    C --> E[Squad-spin API]
-    E --> F[Zustand draft state]
-    C --> K[Moss player index]
-    K --> L[Scout search API]
+    C --> E[Classic squad-spin API]
+    C --> M[Era tournament API]
+    E --> F[Zustand game state]
+    M --> F
+    C --> K[10,973-player Moss index]
+    C --> N[489-squad DNA index]
+    K --> L[Scoped Scout search]
+    N --> O[Squad DNA analysis]
     L --> F
+    O --> F
     D --> G[Tournament engine]
     F --> G
     G --> H[SQLite run storage]
@@ -192,31 +251,33 @@ flowchart LR
     I --> J[Canvas share card]
 ```
 
-The large historical pool remains on the server. The browser requests only the squad returned by the current spin rather than downloading the full 3.6 MB pool. Draft choices are maintained by Zustand, while the completed XI is sent to the simulation API only when the tournament begins.
+The large historical pool remains on the server. Classic requests only the squad returned by each spin. World Cup Era requests one complete tournament roster at a time, never the entire 10,973-player archive. Draft choices, used tournament years, current spin, optional Scout replacement, and Squad DNA result are maintained by Zustand, while the completed XI is sent to the simulation API only when the tournament begins.
 
 The simulation API runs the tournament, saves the resulting object to SQLite, and returns a short run ID used by `/results/[id]`.
 
 ## Moss Scout
 
-Moss is used only for player discovery. It does not alter the wheel, ratings, tournament model, or match-simulation latency.
+Moss is used for player discovery and historical Squad DNA retrieval. It does not alter the wheel, player ratings, or match simulation; the tournament engine remains deterministic for a given seed.
 
-### The two Scout experiences
+### The four Moss experiences
 
-1. **One-transfer game phase:** `/game` opens Moss Scout after all eleven formation slots are filled. The player may replace exactly one drafted campaign with a search result sharing the same broad position. Skipping is allowed, and the entry screen offers one final chance to reopen Scout before simulation.
-2. **Scout Lab:** `/scout` is an independent sandbox. **Moss semantic search** accepts natural-language football descriptions, while **Archive browse** provides direct filters for name, nation, year, position, and sort order. Scout Lab never changes an active game.
+1. **Classic one-transfer phase:** `/game` opens Moss Scout after all eleven Classic slots are filled. The player may replace exactly one drafted campaign with a result sharing the same broad position.
+2. **Era roster search:** World Cup Era exposes Moss beside the current spin’s roster browser. Every query includes that tournament year as a metadata filter, and the player can make exactly one compatible pick before spinning again.
+3. **Squad DNA:** Both modes can search a dedicated 489-squad index after the XI is complete. The final match combines Moss relevance with numeric football-profile similarity.
+4. **Scout Lab:** `/scout` is an independent sandbox. **Moss semantic search** accepts natural-language football descriptions, while **Archive browse** provides direct filters for name, nation, year, position, and sort order. Scout Lab never changes an active game.
 
 ### What happens on first connection
 
 The player supplies `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` through the connection form. The server then:
 
 1. Authenticates against the supplied Moss project.
-2. Looks for the versioned `champions-wc26-players-...` index.
+2. Looks for the requested versioned player or Squad DNA index.
 3. Creates it with the `moss-minilm` model when it does not exist.
-4. Uploads one document for each of the 10,973 campaign records.
+4. Uploads either 10,973 campaign documents or 489 squad-profile documents.
 5. Loads the completed index into the running Node.js process.
-6. Executes later hybrid semantic/keyword queries against the in-memory index.
+6. Executes later hybrid semantic/keyword queries against the in-memory index, including position or year metadata filters when required.
 
-The initial upload and index build can take longer than later searches. Creating the archive also consumes one index and ingest/storage allowance in the supplied Moss project. Loaded queries are local to the running server process; local Moss queries are not metered according to the current [Moss pricing and limits](https://docs.moss.dev/docs/pricing).
+The initial uploads and index builds can take longer than later searches. Player search and Squad DNA use two separate versioned indexes, so enabling both requires room for two Moss indexes plus their ingest/storage allowance. Loaded queries run through the in-process Moss client.
 
 Each indexed document contains the player name, nation, tournament, position, inferred role, rating, appearances, starts, estimated minutes, goals, team finish, and source-coverage note. The complete player object is stored as an opaque Moss payload and returned with the match.
 
@@ -278,7 +339,7 @@ This command requires an internet connection and overwrites the generated JSON f
 
 ## Player ratings
 
-Ratings represent a player’s performance and team success in one specific World Cup campaign. They are **not** full-career, prime, reputation, or conventional video-game ratings.
+The app exposes two deliberately separate rating systems. **World Cup Form** represents performance and team success in one specific tournament. **Prime Form** is an optional Classic ruleset estimating the player’s absolute career peak.
 
 For example, the same player can receive a different rating in two different tournaments. The inputs include:
 
@@ -288,11 +349,13 @@ For example, the same player can receive a different rating in two different tou
 - Goals, with position-dependent weighting
 - The furthest stage reached by the player’s team
 
-There are no manual legend boosts or fame-based overrides. The same formula is applied to every player-tournament record.
+World Cup Form has no manual legend boosts or fame-based overrides. Prime Form includes 101 editorial elite-player benchmarks, then applies one deterministic archive-wide fallback model to everyone else. The source `playerId` links the same person across tournaments, so each version receives an identical prime rating.
+
+Prime examples include Pelé 96, Diego Maradona 95, Ronaldo 95, Lionel Messi 94, Cristiano Ronaldo 94 and Zinedine Zidane 94. These are independent game-design estimates rather than official FIFA or commercial video-game ratings.
 
 Appearance-level player coverage begins in 1970 in the source data. Earlier tournaments rely mainly on squad membership, goals, and team finish, so famous pre-1970 players can look lower than expected. Exact minutes and assists are unavailable; minutes are estimated and assists are stored as `null`.
 
-See [RATINGS.md](./RATINGS.md) for the complete formula, modifiers, sub-position inference, strength conversion, and limitations.
+See [RATINGS.md](./RATINGS.md) for both formulas, the curated/fallback split, modifiers, sub-position inference, strength conversion, and limitations.
 
 ## Tournament simulation
 
@@ -308,11 +371,19 @@ Champions XI derives its model from the drafted players:
 - Mental strength uses the XI’s overall average.
 - The chosen formation adds its tactical modifier.
 
+Player-campaign ratings and 2026 national-team strengths are deliberately different scales. Before simulation, the engine therefore maps the custom XI’s player average onto the tournament-strength scale:
+
+```text
+team strength = clamp(58, 96, round(58 + ((player average - 55) / 37) × 38))
+```
+
+The same conversion is applied to the custom attack, defense, goalkeeper, and mental units before formation modifiers. An **84 player average becomes approximately 88 tournament strength**, making that XI a genuine contender without guaranteeing a deep run. The results UI keeps the raw player average separate from the calibrated simulation strength.
+
 All matches are treated as neutral venue fixtures; the engine does not add artificial home advantage.
 
 ### Regulation scoring
 
-Each team’s expected goals value is computed from its attack rating against the opponent’s defense rating. Actual goals are then sampled from a Poisson distribution.
+Each team’s expected goals value is computed from its attack rating against the opponent’s defense rating. Actual goals are then sampled from a Poisson distribution. Rating differences use a steeper response than the original model, reducing upset variance while retaining believable randomness.
 
 The simulation uses a numeric seed, making an individual generated tournament internally reproducible.
 
@@ -339,7 +410,7 @@ The knockout rounds are:
 4. Semifinal
 5. Final
 
-If a knockout match is level after regulation, the engine samples an additional reduced-intensity 30-minute period. If still tied, a penalty shootout is simulated with near-even odds. The goalkeeper and mental proxies can move the shootout probability slightly, but it remains within a narrow 43–57% range.
+If a knockout match is level after regulation, the engine samples an additional reduced-intensity 30-minute period. If still tied, a penalty shootout is simulated with near-even odds. Goalkeeper and mental differences can move the shootout probability within a bounded 39–61% range.
 
 The engine simulates 103 tournament matches: 72 group matches and 31 knockout matches. A third-place playoff is intentionally not included because it does not affect the player’s championship path.
 
@@ -369,10 +440,11 @@ Draft-in-progress state is separate from SQLite and is persisted in browser stor
 | Route | Method | Purpose |
 | --- | --- | --- |
 | `/api/squads` | GET | Return a random unused historical squad |
+| `/api/eras` | GET | List all tournament years or return one complete year roster, including a random wheel result |
 | `/api/simulate` | POST | Validate the XI, simulate the tournament, and save the run |
 | `/api/runs/[id]` | GET | Retrieve one stored tournament result |
 | `/api/stats` | GET | Return local totals for runs, champions, and perfect runs |
-| `/api/scout/moss` | POST | Connect credentials, create/load the Moss archive index, and run semantic searches |
+| `/api/scout/moss` | POST | Connect credentials, create/load player or Squad DNA indexes, run filtered semantic search, and analyze an XI |
 | `/api/scout/players` | GET | Paginate and filter the local archive used by Scout Lab browse mode |
 
 ## Project structure
@@ -387,7 +459,7 @@ app/
   scout/                   Standalone Moss Scout Lab
   globals.css              Global visual system and responsive styles
 components/
-  game/                    Pitch, game flow, Scout transfer, results, and share card
+  game/                    Modes, Classic/era draft phases, Squad DNA, results, and share card
   scout/                   Shared Moss search and archive browser UI
 data/
   draft-pool.json          Generated historical draft data
@@ -396,7 +468,10 @@ lib/
   db.ts                    SQLite initialization and run persistence
   formations.ts            Formation slots and modifiers
   moss-scout.ts            Server-only Moss client, index lifecycle, and querying
+  prime-ratings.ts         Career-prime benchmarks and archive-wide fallback model
+  era-data.ts              Tournament-year summaries and complete Era rosters
   scout-data.ts            Player-document mapping and local archive browsing
+  squad-dna.ts             Historical squad profiles and combined DNA ranking
   simulation.ts            Group and knockout match engine
   types.ts                 Shared TypeScript models
 scripts/
@@ -405,6 +480,8 @@ store/
   game-store.ts            Persisted Zustand game state
 tests/
   data-integrity.test.mjs  Coverage and field validation
+  era-and-dna-integrity.test.mjs  Era roster and DNA source validation
+  scout-integrity.test.mjs Search archive validation
 RATINGS.md                 Rating methodology
 ```
 
@@ -465,6 +542,9 @@ The data-integrity tests verify that:
 - Every 2026 team has a valid ranking and bounded strength rating.
 - All 10,973 Scout campaign IDs are unique and have valid searchable fields.
 - The Scout archive contains goalkeeper, defender, midfielder, and forward records.
+- World Cup Era exposes all 22 tournaments, exactly 489 squads, and all 10,973 player campaigns.
+- Every Squad DNA source squad has at least eleven rated players and a goalkeeper.
+- Prime ratings resolve consistently by player identity across every tournament version.
 
 The full simulation path has also been exercised through an eight-game championship run, including SQLite save and retrieval.
 
@@ -519,13 +599,13 @@ Confirm that the machine has internet access and that GitHub, FIFA, and Wikipedi
 
 Copy both values from the [Moss portal](https://portal.usemoss.dev) without leading or trailing spaces. The project key—not a publishable browser key—is required because Moss runs in the server route. Reloading the page deliberately clears the entered values.
 
-### The first Moss connection takes a long time
+### The first Moss connection or Squad DNA reveal takes a long time
 
-The first connection uploads and builds an index for 10,973 campaign documents. Keep the page open until it completes. Later searches reuse the versioned index and loaded in-process client. If it fails, confirm the project has room for another index and enough ingest/storage allowance; Archive Browse remains available without Moss.
+The first Scout connection uploads and builds an index for 10,973 campaign documents. The first Squad DNA reveal separately builds a 489-document squad index. Keep the page open until each completes. Later operations reuse the versioned indexes and loaded in-process client. If either fails, confirm the project has room for the required indexes and enough ingest/storage allowance; Archive Browse and the non-Moss game flow remain available.
 
 ## Current limitations
 
-- Ratings describe one World Cup campaign, not full-career or prime ability.
+- World Cup Form describes one campaign; Prime Form is an opinionated estimate because complete club-career data is unavailable across the entire 1930–2022 archive.
 - Appearance-level source coverage begins in 1970.
 - Exact historical minutes and assists are not available.
 - Specific sub-positions are deterministic estimates derived from broad source positions.
@@ -534,6 +614,7 @@ The first connection uploads and builds an index for 10,973 campaign documents. 
 - There is no third-place playoff.
 - There are no accounts, multiplayer rooms, leaderboards, or cross-device saved drafts.
 - Moss search requires user-supplied project credentials and creates a cloud index in that project on first use.
+- Using both Scout search and Squad DNA can create two separate indexes in the supplied Moss project.
 - Moss result explanations are grounded templates, not free-form AI commentary.
 - The current result database is local to one running instance.
 

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Database, Search, Sparkles, Zap } from "lucide-react";
 import { ArchiveBrowser } from "./archive-browser";
 import { MossSearchPanel } from "./moss-search-panel";
+import { MossCredentialsProvider } from "./moss-credentials-context";
 
 export function ScoutLabClient() {
   const [mode, setMode] = useState<"moss" | "archive">("moss");
   return (
+    <MossCredentialsProvider>
     <main className="scout-lab-main">
       <section className="scout-lab-hero">
         <div className="scout-grid-lines" />
@@ -32,5 +34,6 @@ export function ScoutLabClient() {
         {mode === "moss" ? <MossSearchPanel /> : <ArchiveBrowser />}
       </section>
     </main>
+    </MossCredentialsProvider>
   );
 }

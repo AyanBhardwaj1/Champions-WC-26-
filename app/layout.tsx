@@ -9,15 +9,15 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   title: { default: "Champions (WC 26)", template: "%s · Champions (WC 26)" },
-  description: "Spin through every World Cup era, draft an all-time XI and chase a perfect 8–0 at World Cup 2026.",
+  description: "Play Classic Wheel or World Cup Era, reveal your Squad DNA and chase a perfect 8–0 at World Cup 2026.",
   applicationName: "Champions (WC 26)",
   openGraph: {
     title: "Champions (WC 26)",
-    description: "Build the XI. Chase the 8–0.",
+    description: "Two ways to build history. One perfect 8–0.",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Champions WC 26 — chase the perfect 8–0" }],
+    images: [{ url: "/og-modes.png", width: 1200, height: 630, alt: "Champions WC 26 — Classic Wheel, World Cup Era and Moss Squad DNA" }],
   },
-  twitter: { card: "summary_large_image", title: "Champions (WC 26)", description: "Build the XI. Chase the 8–0.", images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: "Champions (WC 26)", description: "Two ways to build history. One perfect 8–0.", images: ["/og-modes.png"] },
   icons: { icon: "/icon" },
 };
 

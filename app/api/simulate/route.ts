@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { saveRun } from "../../../lib/db";
 import { simulateTournament } from "../../../lib/simulation";
-import type { DraftPick, FormationName } from "../../../lib/types";
+import type { ClassicRatingMode, DraftPick, FormationName, GameMode, SquadDnaResult } from "../../../lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +13,11 @@ export async function POST(request: Request) {
       formation: FormationName;
       replacedTeam: string;
       seed?: number;
+      gameMode?: GameMode;
+      classicRatingMode?: ClassicRatingMode;
+      eraYear?: number | null;
+      eraYears?: number[];
+      squadDna?: SquadDnaResult | null;
     };
     const result = simulateTournament({
       ...body,

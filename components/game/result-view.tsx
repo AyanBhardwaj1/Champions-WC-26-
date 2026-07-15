@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Check, Crown, RotateCcw, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { ArrowLeft, Check, Crown, Dna, RotateCcw, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { TournamentResult } from "../../lib/types";
 import { Pitch } from "./pitch";
 import { ShareCard } from "./share-card";
@@ -25,6 +25,7 @@ export function ResultView({ result, onReset }: { result: TournamentResult; onRe
             {result.champion ? <Crown size={18} /> : <ShieldCheck size={18} />}
             {result.champion ? "WORLD CHAMPIONS" : "TOURNAMENT COMPLETE"}
           </div>
+          <div className="result-ruleset">{result.gameMode === "era" ? "WORLD CUP ERA" : `CLASSIC · ${result.classicRatingMode === "prime" ? "PRIME FORM" : "WORLD CUP FORM"}`}</div>
           <div className="record-lockup">
             <span className="record-value">{result.perfect ? "8–0" : record}</span>
             <span className="record-caption">{result.perfect ? "THE PERFECT RUN" : result.reached.toUpperCase()}</span>
@@ -39,7 +40,7 @@ export function ResultView({ result, onReset }: { result: TournamentResult; onRe
           <div className="result-stats">
             <div><span>{result.goalsFor}</span><small>Goals for</small></div>
             <div><span>{result.goalsAgainst}</span><small>Goals against</small></div>
-            <div><span>{result.squadRating}</span><small>XI rating</small></div>
+            <div><span>{result.squadRating}</span><small>Sim strength{result.playerAverageRating ? ` · ${result.playerAverageRating} avg` : ""}</small></div>
             <div><span>{result.formation}</span><small>Formation</small></div>
           </div>
         </div>
@@ -95,6 +96,14 @@ export function ResultView({ result, onReset }: { result: TournamentResult; onRe
             <Pitch formation={result.formation} picks={result.xi} compact />
           </section>
         </div>
+
+        {result.squadDna && (
+          <section className="result-dna-banner">
+            <Dna size={28} />
+            <div><span className="eyebrow">Your Squad DNA</span><h3>{result.squadDna.match.nation} {result.squadDna.match.year}</h3><p>{result.squadDna.explanation}</p></div>
+            <strong>{result.squadDna.similarity}%<small>match</small></strong>
+          </section>
+        )}
 
         <ShareCard result={result} />
 

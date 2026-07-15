@@ -9,6 +9,7 @@ import { Pitch } from "./pitch";
 
 export function ScoutPhase() {
   const formation = useGameStore((state) => state.formation);
+  const classicRatingMode = useGameStore((state) => state.classicRatingMode);
   const picks = useGameStore((state) => state.picks);
   const skipScout = useGameStore((state) => state.skipScout);
   const applyScoutReplacement = useGameStore((state) => state.applyScoutReplacement);
@@ -30,9 +31,9 @@ export function ScoutPhase() {
     <section className="scout-transfer-layout">
       <aside className="scout-transfer-xi">
         <div className="scout-transfer-heading">
-          <span className="step-tag">03 / Moss Scout</span>
+          <span className="step-tag">04 / Moss Scout</span>
           <h1>One move.<br />Anyone.</h1>
-          <p>Your eleven spins are complete. Moss gives you one optional, position-compatible replacement from the entire World Cup archive.</p>
+          <p>Your eleven spins are complete. Moss gives you one optional, position-compatible replacement from the entire World Cup archive. {classicRatingMode === "prime" ? "Every result uses its career-prime rating." : "Ratings remain campaign-specific."}</p>
         </div>
         <div className="scout-pitch-card">
           <div className="scout-pitch-head"><span>Your drafted XI</span><strong>{formation}</strong></div>
@@ -46,7 +47,7 @@ export function ScoutPhase() {
             <div className="transfer-incoming">
               <span><Sparkles size={14} /> Incoming</span>
               <strong>{candidate.name}</strong>
-              <small>{candidate.nation} {candidate.year} · {candidate.subPosition} · {candidate.rating} OVR</small>
+              <small>{candidate.nation} {candidate.year} · {candidate.subPosition} · {candidate.rating} {candidate.ratingMode === "prime" ? `PRIME (${candidate.campaignRating} WC form)` : "OVR"}</small>
             </div>
             <div className="transfer-arrow"><ArrowRight size={20} /></div>
             <div className="transfer-outgoing">
@@ -62,6 +63,7 @@ export function ScoutPhase() {
         )}
         <MossSearchPanel
           compactIntro
+          ratingMode={classicRatingMode}
           onChoose={chooseCandidate}
           selectedPlayerId={candidate?.id}
           excludedPlayerIds={picks.map((pick) => pick.player.id)}
