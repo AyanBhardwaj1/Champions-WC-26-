@@ -20,6 +20,7 @@ export function SiteHeader() {
         <Brand />
         <nav aria-label="Primary navigation">
           <Link href="/how-to-play">How to play</Link>
+          <Link href="/scout">Moss Scout Lab</Link>
           <Link href="/game" className="nav-cta">Build your XI <ArrowUpRight size={14} /></Link>
         </nav>
       </div>
@@ -39,6 +40,7 @@ export function SiteFooter() {
         <div className="footer-links">
           <Link href="/disclaimer">Disclaimer</Link>
           <Link href="/how-to-play">How to play</Link>
+          <Link href="/scout">Moss Scout Lab</Link>
           <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noreferrer">Data source</a>
         </div>
       </div>

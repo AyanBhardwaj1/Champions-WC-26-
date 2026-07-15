@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["@moss-dev/moss", "better-sqlite3"],
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -4,7 +4,7 @@
 
 **Champions (WC 26)** is a local draft-and-simulate football game built around the history of the men’s World Cup. Spin a wheel of real nation-and-year squads, select one player from each squad, build an all-time starting XI, replace a team in the real 2026 field, and attempt to finish the tournament with a perfect **8–0** record.
 
-The complete game runs locally with no external database, user account, or AI API. Historical seed data is included in the repository, and completed runs are saved to a local SQLite database.
+The complete draft and simulation game runs locally with no account or external game database. Historical seed data is included in the repository, completed runs are saved to local SQLite, and an optional Moss integration adds conversational player search when the player supplies their own Moss project credentials.
 
 > This is an unofficial fan-made project. It is not affiliated with, endorsed by, or sponsored by FIFA, any confederation, national association, player, or rights holder.
 
@@ -18,6 +18,7 @@ The complete game runs locally with no external database, user account, or AI AP
 - [Available commands](#available-commands)
 - [Technology](#technology)
 - [Architecture](#architecture)
+- [Moss Scout](#moss-scout)
 - [Historical data](#historical-data)
 - [Player ratings](#player-ratings)
 - [Tournament simulation](#tournament-simulation)
@@ -33,11 +34,12 @@ The complete game runs locally with no external database, user account, or AI AP
 
 ## Game overview
 
-The game combines three systems:
+The game combines four systems:
 
 1. **Historical draft:** A wheel selects one real men’s World Cup squad from 1930–2022. The player can take exactly one eligible footballer from that roster.
 2. **Formation building:** Eleven drafted players must fill the positions in a selected 4-3-3, 4-4-2, or 3-5-2.
-3. **2026 tournament simulation:** The custom XI replaces one real nation in Groups A–L and plays through the group stage and, if qualified, five knockout rounds.
+3. **Moss Scout transfer:** After the eleventh spin, the player may search the complete archive and make one position-compatible replacement.
+4. **2026 tournament simulation:** The custom XI replaces one real nation in Groups A–L and plays through the group stage and, if qualified, five knockout rounds.
 
 The maximum path is eight matches: three group matches plus the Round of 32, Round of 16, quarterfinal, semifinal, and final.
 
@@ -50,6 +52,9 @@ The maximum path is eight matches: three group matches plus the Round of 32, Rou
 - Every men’s World Cup from 1930 through 2022
 - Position-compatible formation slotting
 - No repeated nation/year squad during one draft
+- One optional Moss-powered replacement after the draft
+- Conversational semantic search across all 10,973 player campaigns
+- Separate Scout Lab with semantic search and paginated archive browsing
 - Real 48-team World Cup 2026 group field
 - Full 72-match group-stage simulation
 - Top-two and best-third-place qualification
@@ -90,11 +95,17 @@ Only one player may be taken from each rolled nation/year squad.
 
 Repeat the spin-and-pick process until all eleven positions are occupied. Draft progress is stored in browser storage, so an accidental refresh should not normally erase the current XI.
 
-### 5. Enter the 2026 field
+### 5. Use the optional Moss transfer
+
+After the eleventh pick, the game opens **Moss Scout**. Enter a Moss project ID and project key, then describe the campaign you want in natural language—for example, `creative midfielder from an underdog run` or `commanding goalkeeper before 1990`.
+
+Choose one result and replace one current player with the same broad position. A midfielder replaces a midfielder, a goalkeeper replaces the goalkeeper, and so on. The transfer is final for that run and can be used only once. You can also skip it and keep the XI produced by the wheel.
+
+### 6. Enter the 2026 field
 
 Choose one of the 48 World Cup 2026 nations. The custom team, displayed as **Champions XI**, replaces that nation in its real group and inherits its three group opponents.
 
-### 6. Simulate the tournament
+### 7. Simulate the tournament
 
 Reveal the group stage first. If the XI qualifies, advance through each knockout round until elimination or the final. Completed results are saved automatically.
 
@@ -157,6 +168,7 @@ npm start
 | Styling | Tailwind CSS 4 plus project CSS |
 | Client game state | Zustand with browser persistence |
 | Local results database | SQLite through `better-sqlite3` |
+| Semantic player retrieval | Moss JavaScript SDK through `@moss-dev/moss` |
 | Icons | Lucide React |
 | Historical generation | Node.js script using source CSV files |
 | Match model | Seeded Poisson goal simulation |
@@ -170,6 +182,9 @@ flowchart LR
     B --> D[wc2026-field.json]
     C --> E[Squad-spin API]
     E --> F[Zustand draft state]
+    C --> K[Moss player index]
+    K --> L[Scout search API]
+    L --> F
     D --> G[Tournament engine]
     F --> G
     G --> H[SQLite run storage]
@@ -180,6 +195,40 @@ flowchart LR
 The large historical pool remains on the server. The browser requests only the squad returned by the current spin rather than downloading the full 3.6 MB pool. Draft choices are maintained by Zustand, while the completed XI is sent to the simulation API only when the tournament begins.
 
 The simulation API runs the tournament, saves the resulting object to SQLite, and returns a short run ID used by `/results/[id]`.
+
+## Moss Scout
+
+Moss is used only for player discovery. It does not alter the wheel, ratings, tournament model, or match-simulation latency.
+
+### The two Scout experiences
+
+1. **One-transfer game phase:** `/game` opens Moss Scout after all eleven formation slots are filled. The player may replace exactly one drafted campaign with a search result sharing the same broad position. Skipping is allowed, and the entry screen offers one final chance to reopen Scout before simulation.
+2. **Scout Lab:** `/scout` is an independent sandbox. **Moss semantic search** accepts natural-language football descriptions, while **Archive browse** provides direct filters for name, nation, year, position, and sort order. Scout Lab never changes an active game.
+
+### What happens on first connection
+
+The player supplies `MOSS_PROJECT_ID` and `MOSS_PROJECT_KEY` through the connection form. The server then:
+
+1. Authenticates against the supplied Moss project.
+2. Looks for the versioned `champions-wc26-players-...` index.
+3. Creates it with the `moss-minilm` model when it does not exist.
+4. Uploads one document for each of the 10,973 campaign records.
+5. Loads the completed index into the running Node.js process.
+6. Executes later hybrid semantic/keyword queries against the in-memory index.
+
+The initial upload and index build can take longer than later searches. Creating the archive also consumes one index and ingest/storage allowance in the supplied Moss project. Loaded queries are local to the running server process; local Moss queries are not metered according to the current [Moss pricing and limits](https://docs.moss.dev/docs/pricing).
+
+Each indexed document contains the player name, nation, tournament, position, inferred role, rating, appearances, starts, estimated minutes, goals, team finish, and source-coverage note. The complete player object is stored as an opaque Moss payload and returned with the match.
+
+### Credential handling
+
+- Credentials remain in React component memory for the open page and are not written to `localStorage`, Zustand, SQLite, or committed files.
+- Each connect/search request sends the credentials to the app's Node.js route. The running server keeps a small in-memory Moss client cache so follow-up queries do not reload the index every time.
+- Credentials are never returned in an API response or intentionally logged by the app.
+- Closing/restarting the app clears the server cache. Reloading the page requires the player to enter credentials again.
+- On a public deployment or tunnel, use a purpose-specific Moss project key rather than a sensitive production credential because the application host controls the server receiving it.
+
+Moss performs retrieval, not generative AI, in this implementation. The short explanation below each result is deterministic and composed from the returned campaign data. See the official [Moss Next.js integration](https://docs.moss.dev/docs/integrations/nextjs) and [JavaScript SDK reference](https://docs.moss.dev/docs/reference/js/api) for the underlying pattern.
 
 ## Historical data
 
@@ -323,25 +372,31 @@ Draft-in-progress state is separate from SQLite and is persisted in browser stor
 | `/api/simulate` | POST | Validate the XI, simulate the tournament, and save the run |
 | `/api/runs/[id]` | GET | Retrieve one stored tournament result |
 | `/api/stats` | GET | Return local totals for runs, champions, and perfect runs |
+| `/api/scout/moss` | POST | Connect credentials, create/load the Moss archive index, and run semantic searches |
+| `/api/scout/players` | GET | Paginate and filter the local archive used by Scout Lab browse mode |
 
 ## Project structure
 
 ```text
 app/
-  api/                     Route handlers for spins, simulation, runs, and stats
+  api/                     Route handlers for game and Scout operations
   disclaimer/              Attribution and legal disclaimer page
   game/                    Draft and tournament entry route
   how-to-play/             Player-facing rules
   results/[id]/            Stored result route
+  scout/                   Standalone Moss Scout Lab
   globals.css              Global visual system and responsive styles
 components/
-  game/                    Pitch, game flow, result view, and share card
+  game/                    Pitch, game flow, Scout transfer, results, and share card
+  scout/                   Shared Moss search and archive browser UI
 data/
   draft-pool.json          Generated historical draft data
   wc2026-field.json        Generated 2026 teams and ratings
 lib/
   db.ts                    SQLite initialization and run persistence
   formations.ts            Formation slots and modifiers
+  moss-scout.ts            Server-only Moss client, index lifecycle, and querying
+  scout-data.ts            Player-document mapping and local archive browsing
   simulation.ts            Group and knockout match engine
   types.ts                 Shared TypeScript models
 scripts/
@@ -387,7 +442,7 @@ npm run build
 npm start
 ```
 
-Do not expose `.env.local`, Moss credentials, API keys, or other secrets to the browser or source repository if external services are added later.
+Do not commit Moss credentials or other secrets. This app intentionally asks each player for a key at runtime; a permanent private deployment can instead be adapted to read one server-owned project from environment variables.
 
 ## Testing and verification
 
@@ -408,6 +463,8 @@ The data-integrity tests verify that:
 - The 2026 field contains exactly 48 teams.
 - Groups A–L each contain exactly four teams.
 - Every 2026 team has a valid ranking and bounded strength rating.
+- All 10,973 Scout campaign IDs are unique and have valid searchable fields.
+- The Scout archive contains goalkeeper, defender, midfielder, and forward records.
 
 The full simulation path has also been exercised through an eight-game championship run, including SQLite save and retrieval.
 
@@ -458,6 +515,14 @@ Result IDs are stored in the local SQLite database. The link will not resolve on
 
 Confirm that the machine has internet access and that GitHub, FIFA, and Wikipedia are reachable. Normal gameplay does not require regeneration because generated files are committed to the repository.
 
+### Moss rejects the project ID or key
+
+Copy both values from the [Moss portal](https://portal.usemoss.dev) without leading or trailing spaces. The project key—not a publishable browser key—is required because Moss runs in the server route. Reloading the page deliberately clears the entered values.
+
+### The first Moss connection takes a long time
+
+The first connection uploads and builds an index for 10,973 campaign documents. Keep the page open until it completes. Later searches reuse the versioned index and loaded in-process client. If it fails, confirm the project has room for another index and enough ingest/storage allowance; Archive Browse remains available without Moss.
+
 ## Current limitations
 
 - Ratings describe one World Cup campaign, not full-career or prime ability.
@@ -468,7 +533,8 @@ Confirm that the machine has internet access and that GitHub, FIFA, and Wikipedi
 - Fair play is represented by a small simulation proxy rather than actual future tournament disciplinary records.
 - There is no third-place playoff.
 - There are no accounts, multiplayer rooms, leaderboards, or cross-device saved drafts.
-- The optional AI commentary and Scout with Moss concepts are not currently implemented.
+- Moss search requires user-supplied project credentials and creates a cloud index in that project on first use.
+- Moss result explanations are grounded templates, not free-form AI commentary.
 - The current result database is local to one running instance.
 
 ## Data attribution and disclaimer

@@ -48,6 +48,31 @@ export type DraftPick = {
   squadId: string;
 };
 
+export type MossReplacement = {
+  outgoing: DraftPlayer;
+  incoming: DraftPlayer;
+  slotId: string;
+  completedAt: string;
+};
+
+export type ScoutSearchHit = {
+  player: DraftPlayer;
+  score: number;
+  explanation: string;
+};
+
+export type ScoutBrowseResponse = {
+  players: DraftPlayer[];
+  page: number;
+  perPage: number;
+  total: number;
+  totalPages: number;
+  facets: {
+    nations: string[];
+    years: number[];
+  };
+};
+
 export type FieldTeam = {
   team: string;
   group: string;

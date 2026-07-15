@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@moss-dev/moss':
+        specifier: ^1.4.0
+        version: 1.4.0
       better-sqlite3:
         specifier: ^12.2.0
         version: 12.11.1
@@ -302,6 +305,46 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@moss-dev/moss-core-darwin-arm64@0.20.0':
+    resolution: {integrity: sha512-eqntmIWt4ITzqR25LcXzrk37T0XcAQW84IqGs8ES407zMGoaXjUGVlUe6EHGnt9T1yp6Ys0wHCeF+glBEE+Slg==}
+    engines: {node: '>=20'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@moss-dev/moss-core-darwin-x64@0.20.0':
+    resolution: {integrity: sha512-qAgINHM283XWYaSZX5ZR7tGhbYzPbFoFp1WgAvyt9rYMgjGBMR4vurFyuYe4gtvtfHdR4iGHdWfb86IzGSH7Nw==}
+    engines: {node: '>=20'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@moss-dev/moss-core-linux-arm64-gnu@0.20.0':
+    resolution: {integrity: sha512-sVo+8WeBNVdFNKMr7GLB7AEbRW+3nAZdve/nDoFqAzVJfrTFUVBo5EEM3TT503/k512BzzAaEQH7iPdcprEkIA==}
+    engines: {node: '>=20'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@moss-dev/moss-core-linux-x64-gnu@0.20.0':
+    resolution: {integrity: sha512-dSONfWqy6sIv947U4zxFDyQajbeh9oCchVYkQWbbsMGGsYkBLo/yl4cc3SqZJW3gX1nKx9d+uLuqsArvceELkg==}
+    engines: {node: '>=20'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@moss-dev/moss-core-win32-x64-msvc@0.20.0':
+    resolution: {integrity: sha512-f6+6N8b0vKDW/1JyKQk7Df4sQbh4iNUjE72EOKugb9KFHlEsuLK9YW/tGp/UFgVqCz3qWnfxDvQWtUYU4U4+yA==}
+    engines: {node: '>=20'}
+    cpu: [x64]
+    os: [win32]
+
+  '@moss-dev/moss-core@0.20.0':
+    resolution: {integrity: sha512-EDyNbd7JEtVZxNo6ED0EzCcdi3xS8mVS1evyy7QnT26xzUV9HL0cqi9NF/p7s0kk/QfkdTF4AuB6JHHopxz8Ug==}
+    engines: {node: '>=20'}
+
+  '@moss-dev/moss@1.4.0':
+    resolution: {integrity: sha512-RWSNWh+Gfg3+lGXMt0tyAZoL+ATqdiPU/hXBuedB3dCh75h2WBnWwYgqWI82WjhfdVzourUXFLx5R9z3C9Lsaw==}
+    engines: {node: '>=20.4'}
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -2207,6 +2250,33 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@moss-dev/moss-core-darwin-arm64@0.20.0':
+    optional: true
+
+  '@moss-dev/moss-core-darwin-x64@0.20.0':
+    optional: true
+
+  '@moss-dev/moss-core-linux-arm64-gnu@0.20.0':
+    optional: true
+
+  '@moss-dev/moss-core-linux-x64-gnu@0.20.0':
+    optional: true
+
+  '@moss-dev/moss-core-win32-x64-msvc@0.20.0':
+    optional: true
+
+  '@moss-dev/moss-core@0.20.0':
+    optionalDependencies:
+      '@moss-dev/moss-core-darwin-arm64': 0.20.0
+      '@moss-dev/moss-core-darwin-x64': 0.20.0
+      '@moss-dev/moss-core-linux-arm64-gnu': 0.20.0
+      '@moss-dev/moss-core-linux-x64-gnu': 0.20.0
+      '@moss-dev/moss-core-win32-x64-msvc': 0.20.0
+
+  '@moss-dev/moss@1.4.0':
+    dependencies:
+      '@moss-dev/moss-core': 0.20.0
 
   '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:

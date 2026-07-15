@@ -23,6 +23,7 @@ import { FORMATIONS } from "../../lib/formations";
 import type { DraftPlayer, FieldTeam, FormationName, HistoricSquad, SimMatch } from "../../lib/types";
 import { useGameStore } from "../../store/game-store";
 import { Pitch } from "./pitch";
+import { ScoutPhase } from "./scout-phase";
 
 const formationCopy: Record<FormationName, { label: string; note: string }> = {
   "4-3-3": { label: "Front-foot", note: "+3 attack" },
@@ -176,6 +177,8 @@ function DraftPhase() {
 function EntryPhase() {
   const formation = useGameStore((state) => state.formation);
   const picks = useGameStore((state) => state.picks);
+  const scoutReplacement = useGameStore((state) => state.scoutReplacement);
+  const openScout = useGameStore((state) => state.openScout);
   const beginSimulation = useGameStore((state) => state.beginSimulation);
   const setResult = useGameStore((state) => state.setResult);
   const returnToEntry = useGameStore((state) => state.returnToEntry);
@@ -211,9 +214,17 @@ function EntryPhase() {
   return (
     <section className="entry-layout">
       <div className="entry-copy">
-        <span className="step-tag">03 / Enter the bracket</span>
+        <span className="step-tag">04 / Enter the bracket</span>
         <h1>Take someone’s place.</h1>
         <p>Choose one real 2026 nation. Your XI inherits its group, opponents and route through the tournament.</p>
+        {scoutReplacement ? (
+          <div className="completed-scout-transfer">
+            <Sparkles size={17} />
+            <div><span>Moss transfer complete</span><strong>{scoutReplacement.outgoing.name} → {scoutReplacement.incoming.name}</strong></div>
+          </div>
+        ) : (
+          <button type="button" className="reopen-scout-button" onClick={openScout}><Sparkles size={16} /><span><strong>Want your Moss transfer?</strong><small>You can still replace one position-compatible player before entering.</small></span><ArrowRight size={16} /></button>
+        )}
         <label className="field-label" htmlFor="team-slot">World Cup 2026 slot</label>
         <select id="team-slot" className="team-select" value={selectedTeam} onChange={(event) => setSelectedTeam(event.target.value)}>
           <option value="">Select a nation…</option>
@@ -248,7 +259,7 @@ function SimulationPhase() {
   const result = useGameStore((state) => state.result);
   const [revealCount, setRevealCount] = useState(0);
   if (!result) {
-    return <section className="simulation-loading"><span className="loader-ring" /><span className="step-tag">04 / Simulation</span><h1>Drawing the tournament…</h1><p>Simulating all 104-path outcomes around your World Cup run.</p></section>;
+    return <section className="simulation-loading"><span className="loader-ring" /><span className="step-tag">05 / Simulation</span><h1>Drawing the tournament…</h1><p>Simulating the complete World Cup around your custom XI.</p></section>;
   }
   const visible = result.path.slice(0, revealCount);
   const groupDone = revealCount >= Math.min(3, result.path.length);
@@ -256,7 +267,7 @@ function SimulationPhase() {
   const next = result.path[revealCount];
   return (
     <section className="simulation-layout">
-      <div className="simulation-head"><div><span className="step-tag">04 / Simulation</span><h1>The road to {result.perfect ? "8–0" : "glory"}.</h1></div><div className="live-badge"><span /> TOURNAMENT ENGINE</div></div>
+      <div className="simulation-head"><div><span className="step-tag">05 / Simulation</span><h1>The road to {result.perfect ? "8–0" : "glory"}.</h1></div><div className="live-badge"><span /> TOURNAMENT ENGINE</div></div>
       <div className="simulation-grid">
         <div className="sim-timeline">
           {visible.map((match, index) => (
@@ -298,6 +309,7 @@ export function GameClient() {
     <main className="game-main shell-wide">
       {phase === "setup" && <SetupPhase />}
       {phase === "draft" && <DraftPhase />}
+      {phase === "scout" && <ScoutPhase />}
       {phase === "entry" && <EntryPhase />}
       {phase === "simulation" && <SimulationPhase />}
     </main>

@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, Dices, Goal, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Dices, Goal, Search, ShieldCheck, Trophy } from "lucide-react";
 import sources from "../data/data-sources.json";
 import { HomeStats } from "../components/home-stats";
 
 const steps = [
   { number: "01", icon: Dices, title: "Spin history", copy: "The wheel lands on one of 489 real men’s World Cup squads, from 1930 to 2022." },
   { number: "02", icon: ShieldCheck, title: "Draft one icon", copy: "Choose one player from that squad and place him into an open position in your XI." },
-  { number: "03", icon: Goal, title: "Take a 2026 slot", copy: "Replace one of the 48 real teams and inherit its group, opponents and bracket route." },
-  { number: "04", icon: Trophy, title: "Go 8–0", copy: "Win three group games and five knockout ties. Penalty wins count—but break the perfect run." },
+  { number: "03", icon: Search, title: "Make one Moss move", copy: "Search the complete archive conversationally and optionally replace one position-compatible player." },
+  { number: "04", icon: Goal, title: "Take a 2026 slot", copy: "Replace one of the 48 real teams and inherit its group, opponents and bracket route." },
+  { number: "05", icon: Trophy, title: "Go 8–0", copy: "Win three group games and five knockout ties. Penalty wins count—but break the perfect run." },
 ];
 
 export default function Home() {
@@ -46,7 +47,7 @@ export default function Home() {
 
       <section className="how-section shell">
         <div className="section-heading split-heading">
-          <div><span className="eyebrow">Four decisions from glory</span><h2>One player at a time.</h2></div>
+          <div><span className="eyebrow">Five moves from glory</span><h2>One player at a time.</h2></div>
           <p>No transfer budget. No chemistry hacks. Just one pick from every squad the wheel gives you.</p>
         </div>
         <div className="step-grid">
